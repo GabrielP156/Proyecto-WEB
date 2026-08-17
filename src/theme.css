@@ -1,0 +1,43 @@
+@theme {
+  --font-display: "Orbitron", sans-serif;
+
+  /* Fondos oscuros */
+  --color-bg: #000000;
+  --color-bg-alt: #0a0a0a;
+  --color-bg-carbon: #121212;
+  --color-bg-space: #1a1a2e;
+  --color-card: #14141c;
+  --color-bg-blue: #0d0d1a;
+  --color-bg-purple: #150017;
+
+  /* Texto */
+  --color-text: #ffffff;
+  --color-muted: #9b9bb0;
+
+  /* Neones (paleta completa) */
+  --color-neon-green: #39ff14;
+  --color-neon-cyan: #00ffff;
+  --color-neon-magenta: #ff00ff;
+  --color-neon-blue: #00f0ff;
+  --color-neon-purple: #bc13fe;
+  --color-neon-yellow: #fff700;
+  --color-neon-orange: #ff6e00;
+  --color-neon-red: #ff073a;
+  --color-neon-violet: #7b2fff;
+  --color-neon-lime: #ccff00;
+  --color-neon-turquoise: #0ffcbe;
+  --color-neon-pink: #ff10f0;
+
+  /* Nombres semánticos (usados por los componentes) */
+  --color-primary: var(--color-neon-violet);
+  --color-primary-dark: #6420cc;
+  --color-accent: var(--color-neon-cyan);
+  --color-secondary: var(--color-neon-purple);
+  --color-hover: var(--color-neon-pink);
+
+  /* Estados */
+  --color-success: var(--color-neon-green);
+  --color-danger: var(--color-neon-red);
+  --color-warning: var(--color-neon-yellow);
+  --color-info: var(--color-neon-blue);
+}
