@@ -32,6 +32,10 @@ export default function Employer() {
     },
   });
 
+  const onSubmit = (data) => {
+   
+  };
+
   const inputClass =
     "w-full px-3 py-2 bg-slate-900/80 border border-cyan-500/30 text-white rounded-lg " +
     "focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400/50 text-sm font-mono " +
