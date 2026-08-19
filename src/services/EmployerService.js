@@ -1,44 +1,34 @@
-  import { get, post ,put,patch,postFile} from "./api";
-  const parameter="/empleados"
-  
+import { get, post, put, patch, postFile } from "./api";
+const parameter = "/empleados"
 
-  export function  ListAllEmployers(endpoint = parameter){
-    return get(endpoint);
-  }
+export function ListAllEmployers(endpoint = parameter) {
+  return get(endpoint);
+}
 
-    export function CreateEmployer(endpoint = parameter,Servicio){
-    return post(endpoint,Servicio);
-  }
+export function CreateEmployer(empleado) {
+  return post(parameter, empleado);
+}
 
-    export function getState(endpoint = parameter){
-    return get(endpoint+"/activos");
-  }
-  
-    export function Schedule(endpoint = parameter,id,estadoData){
-    return patch(`${endpoint}/${id}/agenda`, estadoData);
-  }
+export function getState(endpoint = parameter) {
+  return get(endpoint + "/activos");
+}
 
-      export function setState(endpoint = parameter,id,estadoData){
-      return patch(`${endpoint}/${id}/estado`, estadoData);
-    }
+export function getAgendaEmpleado(id, fecha) {
+  return get(`${parameter}/${id}/agenda?fecha=${fecha}`);
+}
 
-    export function updateService(id, servicio) {
-      return put(parameter + "/" + id, servicio);
-    }
-    
-      export function getEmployer(endpoint = parameter,id){
-    return get(endpoint+"/"+{id},id);
-  }
+export function setStateEmployer(id, estadoData) {
+  return patch(`${parameter}/${id}/estado`, estadoData);
+}
 
-  
-      export function getEspecialidad(endpoint="/especialidades"){
-    return get(endpoint);
-  }
+export function updateEmployer(id, empleado) {
+  return put(parameter + "/" + id, empleado);
+}
 
-      export function getEmployerdById(endpoint = parameter,id){
-    return get(endpoint+"/"+{id});
-  }
+export function getEmployer(id) {
+  return get(parameter + "/" + id);
+}
 
-
-
-
+export function getEspecialidad(endpoint = "/especialidades") {
+  return get(endpoint);
+}
