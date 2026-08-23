@@ -43,8 +43,8 @@ export function LoginPage() {
   };
 
   return (
-    <div className="w-screen h-[92vh] flex ">
-      <div className="relative w-1/2 h-full flex items-center justify-center p-12 ">
+    <div className="w-screen min-h-[92vh] flex flex-col md:flex-row md:h-[92vh]">
+      <div className="hidden md:flex relative w-1/2 h-full items-center justify-center p-12 ">
         <div className="relative w-full h-full max-h-[600px] group transition-all duration-500 ease-out transform hover:-rotate-1 hover:scale-105">
           <div className="absolute -inset-1 bg-gradient-to-r from-cyan-500 to-pink-500 rounded-2xl blur-md opacity-70 group-hover:opacity-100 transition duration-500" />
           <div className="relative w-full h-full bg-slate-900 rounded-2xl overflow-hidden border border-cyan-500/30">
@@ -63,7 +63,7 @@ export function LoginPage() {
       </div>
 
       {/*Derecha */}
-      <div className="relative w-1/2 h-full flex items-center justify-center overflow-y-auto">
+      <div className="relative w-full md:w-1/2 h-full flex items-center justify-center overflow-y-auto">
         <div className="absolute top-[8%] left-[6%] -z-30 [animation-delay:-2.5s] after:content-[''] after:block after:w-24 after:h-24 after:rounded-full after:bg-pink-500 after:border-4 after:border-pink-500 after:shadow-[0_0_20px_rgba(236,72,153,0.9),0_0_40px_rgba(236,72,153,0.6)] animate-flotar1"></div>
         <div className="absolute top-[6%] right-[6%] -z-30 [animation-delay:-5s] after:content-[''] after:block after:w-28 after:h-28 after:rounded-full after:bg-accent after:border-4 after:border-accent after:shadow-[0_0_15px_var(--color-accent,#8b5cf6),0_0_20px_var(--color-accent,#8b5cf6)] animate-flotar2"></div>
         <div className="absolute top-[46%] left-[3%] -z-30 -translate-y-1/2 [animation-delay:-1s] after:content-[''] after:block after:w-20 after:h-20 after:rounded-full after:bg-[rgba(138,43,226)] after:border-4 after:border-[#8a2be2] after:shadow-[0_0_20px_rgba(138,43,226,0.8),0_0_40px_rgba(138,43,226,0.4)] animate-flotar3"></div>
