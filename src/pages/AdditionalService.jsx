@@ -5,7 +5,7 @@ import {
   setStateAdicional,
   updateServiceAdicional,
 } from "/src/services/additionalService.js";
-import { AuthCard } from "/src/components/AuthCard";
+import { Modal } from "/src/components/Modal";
 import { Label } from "@/components/ui/label";
 import { useForm } from "react-hook-form";
 import { useAuth } from "/src/services/auth/useAuth";
@@ -220,20 +220,12 @@ export function Aditional() {
 
       {/* Modal para crear/editar */}
       {modal && (
-        <AuthCard
-          className="-top-18 left-0 absolute h-screen w-screen bg-black/90 backdrop-blur-sm z-50 flex items-center justify-center"
-          title={servicioEditando ? "Editar Servicio Adicional" : "Crear Servicio Adicional"}
-          onClick={cerrarModal}
-        >
-          <div className="relative pt-2">
-            <button
-              type="button"
-              onClick={cerrarModal}
-              className="absolute -top-12 right-0 text-gray-400 hover:text-white bg-white/10 hover:bg-white/20 rounded-full w-8 h-8 flex items-center justify-center transition-all cursor-pointer"
-            >
-              ✕
-            </button>
+        <Modal onClose={cerrarModal} maxWidth="max-w-md" maxHeight="max-h-[90vh]">
+          <h2 className="text-sm uppercase text-fuchsia-300 mb-4">
+            {servicioEditando ? "Editar Servicio Adicional" : "Crear Servicio Adicional"}
+          </h2>
 
+          <div className="relative pt-2">
             <form className="flex flex-col" onSubmit={handleSubmit(onSubmit)}>
               <Label required>Nombre</Label>
               <input
@@ -286,7 +278,7 @@ export function Aditional() {
               </button>
             </form>
           </div>
-        </AuthCard>
+        </Modal>
       )}
     </section>
   );
