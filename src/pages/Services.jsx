@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { ListAllService, CreateService, getEspecialidad, uploadImagen, setState, updateService } from "/src/services/Servicios";
 import { AuthCard } from "/src/components/AuthCard";
-import { Label } from "/src/components/Label";
+import { Label } from "@/components/ui/label";
 import { useForm } from "react-hook-form";
 import { API_URL } from "/src/services/api";
 import { useAuth } from "/src/services/auth/useAuth";

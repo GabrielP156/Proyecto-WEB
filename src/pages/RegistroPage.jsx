@@ -1,9 +1,10 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { CampoPassword } from "../components/CampoPassword";
-import { Button } from "../components/Button";
+import { Button } from "@/components/ui/button";
 import { AuthCard } from "../components/AuthCard";
-import { Label } from "../components/Label";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 import { useAuth } from "../services/auth/useAuth";
 
 
@@ -74,58 +75,52 @@ export function RegistroPage() {
       <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
         <div>
           <Label required>Nombre</Label>
-          <input
+          <Input
             name="nombre"
             value={formData.nombre}
             onChange={handleChange}
             required
             minLength={2}
-            className="w-full border rounded px-3 py-2"
           />
         </div>
 
         <div>
           <Label required>Primer apellido</Label>
-          <input
+          <Input
             name="primerApellido"
             value={formData.primerApellido}
             onChange={handleChange}
             required
             minLength={2}
-            className="w-full border rounded px-3 py-2"
           />
         </div>
 
         <div>
           <Label>Segundo apellido</Label>
-          <input
+          <Input
             name="segundoApellido"
             value={formData.segundoApellido}
             onChange={handleChange}
-            className="w-full border rounded px-3 py-2"
           />
         </div>
 
         <div>
           <Label required>Correo</Label>
-          <input
+          <Input
             type="email"
             name="correo"
             value={formData.correo}
             onChange={handleChange}
             required
-            className="w-full border rounded px-3 py-2"
           />
         </div>
 
         <div>
           <Label>Teléfono</Label>
-          <input
+          <Input
             name="telefono"
             value={formData.telefono}
             onChange={handleChange}
-            className="w-full border rounded px-3 py-2"
-           
           />
         </div>
 

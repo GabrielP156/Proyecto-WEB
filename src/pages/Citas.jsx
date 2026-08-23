@@ -17,6 +17,8 @@ import { ListAllEmployers, getAgendaEmpleado } from "/src/services/EmployerServi
 import { getState as getServiciosActivos } from "/src/services/Servicios";
 import { getStateAdicional } from "/src/services/additionalService";
 import { listarUsuarios } from "/src/services/usuarioService";
+import { Table } from "/src/components/Table";
+import { Modal } from "/src/components/Modal";
 
 const COLOR_ESTADO = {
   Pendiente: "bg-yellow-500/20 text-yellow-300 border-yellow-400/50",
@@ -322,243 +324,202 @@ export function Citas() {
           )}
         </header>
 
-        <div className="relative group">
-          <div className="absolute -inset-0.5 bg-gradient-to-r from-pink-500 to-accent rounded-2xl blur-md opacity-40 group-hover:opacity-70 transition duration-500" />
-          <div className="relative bg-neutral-900/90 border border-pink-500/40 rounded-2xl p-6 min-h-[400px] overflow-x-auto">
-            <table className="w-full min-w-[600px] text-left text-sm text-gray-300">
-              <thead className="text-pink-300 uppercase text-xs border-b border-pink-500/30">
-                <tr>
-                  <th className="px-4 py-3 cursor-pointer select-none hover:text-white" onClick={() => ordenarPor("fecha")}>
-                    Fecha {ordenColumna === "fecha" && (ordenAsc ? "↑" : "↓")}
-                  </th>
-                  <th className="px-4 py-3">Hora</th>
-                  <th className="px-4 py-3 cursor-pointer select-none hover:text-white" onClick={() => ordenarPor("cliente")}>
-                    Cliente {ordenColumna === "cliente" && (ordenAsc ? "↑" : "↓")}
-                  </th>
-                  <th className="px-4 py-3 cursor-pointer select-none hover:text-white" onClick={() => ordenarPor("servicio")}>
-                    Servicio {ordenColumna === "servicio" && (ordenAsc ? "↑" : "↓")}
-                  </th>
-                  <th className="px-4 py-3 cursor-pointer select-none hover:text-white" onClick={() => ordenarPor("estado")}>
-                    Estado {ordenColumna === "estado" && (ordenAsc ? "↑" : "↓")}
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {citasOrdenadas.length === 0 ? (
-                  <tr><td colSpan={5} className="px-4 py-6 text-center text-gray-500">Sin citas registradas</td></tr>
-                ) : (
-                  citasOrdenadas.map((item) => (
-                    <tr
-                      key={item.id}
-                      onClick={() => verDetalles(item)}
-                      className="border-b border-pink-500/10 hover:bg-pink-500/5 cursor-pointer transition-colors"
-                    >
-                      <td className="px-4 py-3">{item.fecha?.slice(0, 10)}</td>
-                      <td className="px-4 py-3">{item.horaInicio} - {item.horaFin}</td>
-                      <td className="px-4 py-3">{item.cliente?.nombre} {item.cliente?.primerApellido}</td>
-                      <td className="px-4 py-3">{item.servicio?.nombre}</td>
-                      <td className="px-4 py-3"><EstadoBadge nombre={item.estadoCita?.nombre} /></td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
-        </div>
+        <Table
+          columns={[
+            { key: "fecha", label: "Fecha", sortable: true, render: (item) => item.fecha?.slice(0, 10) },
+            { key: "hora", label: "Hora", render: (item) => `${item.horaInicio} - ${item.horaFin}` },
+            { key: "cliente", label: "Cliente", sortable: true, render: (item) => `${item.cliente?.nombre} ${item.cliente?.primerApellido}` },
+            { key: "servicio", label: "Servicio", sortable: true, render: (item) => item.servicio?.nombre },
+            { key: "estado", label: "Estado", sortable: true, render: (item) => <EstadoBadge nombre={item.estadoCita?.nombre} /> },
+          ]}
+          data={citasOrdenadas}
+          onRowClick={verDetalles}
+          sortColumn={ordenColumna}
+          sortAsc={ordenAsc}
+          onSort={ordenarPor}
+          emptyMessage="Sin citas registradas"
+          minWidth="600px"
+        />
       </div>
 
       {/* Modal ver Detalle */}
       {modalDetalles && cita && (
-        <div onClick={() => setModalDetalles(false)} className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
-          <div onClick={(e) => e.stopPropagation()} className="relative group max-h-[85vh] w-full max-w-lg">
-            <div className="absolute -inset-0.5 bg-gradient-to-r from-cyan-500 to-pink-500 rounded-2xl blur-md opacity-60" />
-            <div className="relative bg-neutral-900/90 border border-cyan-500/30 rounded-2xl p-6 overflow-y-auto max-h-[85vh]">
-              <button onClick={() => setModalDetalles(false)} className="absolute top-3 right-3 text-white bg-black/60 hover:bg-fuchsia-600 w-8 h-8 rounded-full flex items-center justify-center">✕</button>
+        <Modal onClose={() => setModalDetalles(false)}>
+          <h3 className="text-xl font-bold uppercase text-cyan-300">{cita.servicio?.nombre}</h3>
+          <p className="text-sm text-gray-400 mt-1">
+            {cita.fecha?.slice(0, 10)} · {cita.horaInicio} - {cita.horaFin}
+          </p>
 
-              <h3 className="text-xl font-bold uppercase text-cyan-300">{cita.servicio?.nombre}</h3>
-              <p className="text-sm text-gray-400 mt-1">
-                {cita.fecha?.slice(0, 10)} · {cita.horaInicio} - {cita.horaFin}
-              </p>
+          <p className="text-xs uppercase text-fuchsia-300 mt-4 mb-1">Cliente</p>
+          <p className="text-sm text-gray-300">{cita.cliente?.nombre} {cita.cliente?.primerApellido}</p>
 
-              <p className="text-xs uppercase text-fuchsia-300 mt-4 mb-1">Cliente</p>
-              <p className="text-sm text-gray-300">{cita.cliente?.nombre} {cita.cliente?.primerApellido}</p>
+          <p className="text-xs uppercase text-fuchsia-300 mt-4 mb-1">Encargado</p>
+          <p className="text-sm text-gray-300">
+            {cita.empleado?.usuario?.nombre} {cita.empleado?.usuario?.primerApellido}
+          </p>
 
-              <p className="text-xs uppercase text-fuchsia-300 mt-4 mb-1">Encargado</p>
-              <p className="text-sm text-gray-300">
-                {cita.empleado?.usuario?.nombre} {cita.empleado?.usuario?.primerApellido}
-              </p>
+          <p className="text-xs uppercase text-fuchsia-300 mt-4 mb-1">Adicionales</p>
+          <p className="text-sm text-gray-300">
+            {cita.adicionales?.map((a) => a.nombre).join(", ") || "Ninguno"}
+          </p>
 
-              <p className="text-xs uppercase text-fuchsia-300 mt-4 mb-1">Adicionales</p>
-              <p className="text-sm text-gray-300">
-                {cita.adicionales?.map((a) => a.nombre).join(", ") || "Ninguno"}
-              </p>
+          <p className="text-xs uppercase text-fuchsia-300 mt-4 mb-1">Costo total</p>
+          <p className="text-sm text-gray-300">${cita.costoTotal}</p>
 
-              <p className="text-xs uppercase text-fuchsia-300 mt-4 mb-1">Costo total</p>
-              <p className="text-sm text-gray-300">${cita.costoTotal}</p>
+          <p className="text-xs uppercase text-fuchsia-300 mt-4 mb-1">Observaciones</p>
+          <p className="text-sm text-gray-300">{cita.observaciones || "Sin observaciones"}</p>
 
-              <p className="text-xs uppercase text-fuchsia-300 mt-4 mb-1">Observaciones</p>
-              <p className="text-sm text-gray-300">{cita.observaciones || "Sin observaciones"}</p>
+          <p className="text-xs uppercase text-fuchsia-300 mt-4 mb-1">Estado</p>
+          <EstadoBadge nombre={cita.estadoCita?.nombre} />
 
-              <p className="text-xs uppercase text-fuchsia-300 mt-4 mb-1">Estado</p>
-              <EstadoBadge nombre={cita.estadoCita?.nombre} />
+          <div className="flex flex-wrap gap-2 mt-4">
+            {esStaff && cita.estadoCita?.permiteEdicion && (
+              <button onClick={() => abrirEditar(cita)} className="text-xs px-3 py-1 border border-cyan-400/50 rounded text-cyan-300 hover:bg-cyan-500/20">
+                Editar
+              </button>
+            )}
 
-              <div className="flex flex-wrap gap-2 mt-4">
-                {esStaff && cita.estadoCita?.permiteEdicion && (
-                  <button onClick={() => abrirEditar(cita)} className="text-xs px-3 py-1 border border-cyan-400/50 rounded text-cyan-300 hover:bg-cyan-500/20">
-                    Editar
-                  </button>
-                )}
+            {esStaff && (
+              <select
+                defaultValue=""
+                onChange={(e) => e.target.value && handleCambiarEstado(e.target.value)}
+                className="text-xs px-2 py-1 bg-slate-900/80 border border-cyan-400/50 rounded text-cyan-300"
+              >
+                <option value="">Cambiar estado...</option>
+                {estados.map((e) => (
+                  <option key={e.id} value={e.id}>{e.nombre}</option>
+                ))}
+              </select>
+            )}
 
-                {esStaff && (
-                  <select
-                    defaultValue=""
-                    onChange={(e) => e.target.value && handleCambiarEstado(e.target.value)}
-                    className="text-xs px-2 py-1 bg-slate-900/80 border border-cyan-400/50 rounded text-cyan-300"
-                  >
-                    <option value="">Cambiar estado...</option>
-                    {estados.map((e) => (
-                      <option key={e.id} value={e.id}>{e.nombre}</option>
-                    ))}
-                  </select>
-                )}
-
-                {(esStaff || cita.estadoCita?.permiteCancelacionCliente) && cita.estadoCita?.nombre !== "Cancelada" && cita.estadoCita?.nombre !== "Finalizada" && (
-                  <button onClick={handleCancelar} className="text-xs px-3 py-1 border border-fuchsia-400/50 rounded text-fuchsia-300 hover:bg-fuchsia-500/20">
-                    Cancelar cita
-                  </button>
-                )}
-              </div>
-            </div>
+            {(esStaff || cita.estadoCita?.permiteCancelacionCliente) && cita.estadoCita?.nombre !== "Cancelada" && cita.estadoCita?.nombre !== "Finalizada" && (
+              <button onClick={handleCancelar} className="text-xs px-3 py-1 border border-fuchsia-400/50 rounded text-fuchsia-300 hover:bg-fuchsia-500/20">
+                Cancelar cita
+              </button>
+            )}
           </div>
-        </div>
+        </Modal>
       )}
 
       {/* Modal Crear/Editar */}
       {modal && (
-        <div onClick={cerrarModal} className="fixed inset-0 z-50 bg-black/90 backdrop-blur-sm flex items-center justify-center p-4">
-          <div onClick={(e) => e.stopPropagation()} className="relative group max-h-[90vh] w-full max-w-md">
-            <div className="absolute -inset-0.5 bg-gradient-to-r from-cyan-500 to-pink-500 rounded-2xl blur-md opacity-60" />
-            <div className="relative bg-neutral-900/90 border border-cyan-500/30 rounded-2xl p-6 overflow-y-auto max-h-[90vh]">
-              <button type="button" onClick={cerrarModal} className="absolute top-3 right-3 text-gray-400 hover:text-white bg-white/10 rounded-full w-8 h-8 flex items-center justify-center">✕</button>
+        <Modal onClose={cerrarModal} maxWidth="max-w-md" maxHeight="max-h-[90vh]" dark>
+          <h2 className="text-sm uppercase text-fuchsia-300 mb-4">
+            {citaEditando ? "Editar Cita" : "Nueva Cita"}
+          </h2>
 
-              <h2 className="text-sm uppercase text-fuchsia-300 mb-4">
-                {citaEditando ? "Editar Cita" : "Nueva Cita"}
-              </h2>
-
-              <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
-                <div>
-                  <label className={labelClass}>Cliente *</label>
-                  <select className={inputClass} {...register("clienteId", { required: "Selecciona un cliente" })}>
-                    <option value="">-- Selecciona --</option>
-                    {clientes.map((c) => (
-                      <option key={c.id} value={c.id}>{c.nombre} {c.primerApellido}</option>
-                    ))}
-                  </select>
-                  {errors.clienteId && <span className="text-xs text-fuchsia-400">{errors.clienteId.message}</span>}
-                </div>
-
-                <div>
-                  <label className={labelClass}>Juego *</label>
-                  <select className={inputClass} {...register("servicioId", { required: "Selecciona un juego" })}>
-                    <option value="">-- Selecciona --</option>
-                    {servicios.map((s) => (
-                      <option key={s.id} value={s.id}>{s.nombre} (${s.precioBase} / {s.duracionMinutos} min)</option>
-                    ))}
-                  </select>
-                  {errors.servicioId && <span className="text-xs text-fuchsia-400">{errors.servicioId.message}</span>}
-                </div>
-
-                <div>
-                  <label className={labelClass}>Encargado *</label>
-                  <select className={inputClass} {...register("empleadoId", { required: "Selecciona un encargado" })}>
-                    <option value="">-- Selecciona --</option>
-                    {empleadosServicio.map((e) => (
-                      <option key={e.id} value={e.id}>{e.usuario?.nombre} {e.usuario?.primerApellido}</option>
-                    ))}
-                  </select>
-                  {errors.empleadoId && <span className="text-xs text-fuchsia-400">{errors.empleadoId.message}</span>}
-                </div>
-
-                <div className="flex gap-3">
-                  <div className="flex-1">
-                    <label className={labelClass}>Fecha *</label>
-                    <input type="date" min={hoy} className={inputClass} {...register("fecha", { required: "Obligatorio" })} />
-                    {errors.fecha && <span className="text-xs text-fuchsia-400">{errors.fecha.message}</span>}
-                  </div>
-                  <div className="flex-1">
-                    <label className={labelClass}>Hora inicio *</label>
-                    <input type="time" className={inputClass} {...register("horaInicio", { required: "Obligatorio" })} />
-                    {errors.horaInicio && <span className="text-xs text-fuchsia-400">{errors.horaInicio.message}</span>}
-                  </div>
-                </div>
-
-                {agendaEmpleado && (
-                  <div className="text-xs text-gray-400 border border-cyan-500/20 rounded-lg p-3 space-y-2 bg-slate-900/60">
-                    <p className="uppercase text-fuchsia-300">Agenda del empleado ese día</p>
-                    {agendaEmpleado.citas?.length ? (
-                      agendaEmpleado.citas
-                        .filter((c) => c.estadoCita?.nombre !== "Cancelada")
-                        .map((c) => (
-                          <p key={c.id}>{c.horaInicio} - {c.horaFin} · {c.servicio?.nombre} ({c.estadoCita?.nombre})</p>
-                        ))
-                    ) : (
-                      <p>Sin citas registradas ese día</p>
-                    )}
-                    <p className="uppercase text-fuchsia-300 pt-1">Restricciones ese día</p>
-                    {agendaEmpleado.restricciones?.length ? (
-                      agendaEmpleado.restricciones.map((r) => (
-                        <p key={r.id}>{r.todoElDia ? "Todo el día" : `${r.horaInicio} - ${r.horaFin}`} · {r.tipoRestriccion?.nombre}</p>
-                      ))
-                    ) : (
-                      <p>Sin restricciones ese día</p>
-                    )}
-                  </div>
-                )}
-
-                {(consultandoDisponibilidad || disponibilidad) && (
-                  <p className={`text-xs ${disponibilidad?.disponible === false ? "text-fuchsia-400" : "text-emerald-400"}`}>
-                    {consultandoDisponibilidad
-                      ? "Consultando disponibilidad..."
-                      : disponibilidad?.disponible
-                        ? "Horario disponible"
-                        : disponibilidad?.motivo || "Horario no disponible"}
-                  </p>
-                )}
-
-                {adicionales.length > 0 && (
-                  <div>
-                    <label className={labelClass}>Adicionales</label>
-                    <div className="border border-cyan-500/30 rounded-lg p-3 max-h-32 overflow-y-auto space-y-1 bg-slate-900/60">
-                      {adicionales.map((a) => (
-                        <label key={a.id} className="flex items-center gap-2 text-sm text-gray-300 cursor-pointer">
-                          <input type="checkbox" value={a.id} {...register("adicionalIds")} className="accent-cyan-400" />
-                          {a.nombre} (${a.precio})
-                        </label>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                <div>
-                  <label className={labelClass}>Observaciones</label>
-                  <input className={inputClass} {...register("observaciones")} />
-                </div>
-
-                <div className="text-xs text-gray-400 border-t border-cyan-500/20 pt-3 space-y-1">
-                  <p>Duración total: {duracionMinutos || 0} minutos</p>
-                  <p>Hora fin: {horaFin || "--:--"}</p>
-                  <p>Costo total: ${costoTotal}</p>
-                </div>
-
-                {errorGeneral && <p className="text-fuchsia-400 text-sm">{errorGeneral}</p>}
-
-                <button type="submit" disabled={enviando || disponibilidad?.disponible === false} className={botonNeon}>
-                  {enviando ? "Guardando..." : citaEditando ? "Guardar Cambios" : "Crear Cita"}
-                </button>
-              </form>
+          <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
+            <div>
+              <label className={labelClass}>Cliente *</label>
+              <select className={inputClass} {...register("clienteId", { required: "Selecciona un cliente" })}>
+                <option value="">-- Selecciona --</option>
+                {clientes.map((c) => (
+                  <option key={c.id} value={c.id}>{c.nombre} {c.primerApellido}</option>
+                ))}
+              </select>
+              {errors.clienteId && <span className="text-xs text-fuchsia-400">{errors.clienteId.message}</span>}
             </div>
-          </div>
-        </div>
+
+            <div>
+              <label className={labelClass}>Juego *</label>
+              <select className={inputClass} {...register("servicioId", { required: "Selecciona un juego" })}>
+                <option value="">-- Selecciona --</option>
+                {servicios.map((s) => (
+                  <option key={s.id} value={s.id}>{s.nombre} (${s.precioBase} / {s.duracionMinutos} min)</option>
+                ))}
+              </select>
+              {errors.servicioId && <span className="text-xs text-fuchsia-400">{errors.servicioId.message}</span>}
+            </div>
+
+            <div>
+              <label className={labelClass}>Encargado *</label>
+              <select className={inputClass} {...register("empleadoId", { required: "Selecciona un encargado" })}>
+                <option value="">-- Selecciona --</option>
+                {empleadosServicio.map((e) => (
+                  <option key={e.id} value={e.id}>{e.usuario?.nombre} {e.usuario?.primerApellido}</option>
+                ))}
+              </select>
+              {errors.empleadoId && <span className="text-xs text-fuchsia-400">{errors.empleadoId.message}</span>}
+            </div>
+
+            <div className="flex gap-3">
+              <div className="flex-1">
+                <label className={labelClass}>Fecha *</label>
+                <input type="date" min={hoy} className={inputClass} {...register("fecha", { required: "Obligatorio" })} />
+                {errors.fecha && <span className="text-xs text-fuchsia-400">{errors.fecha.message}</span>}
+              </div>
+              <div className="flex-1">
+                <label className={labelClass}>Hora inicio *</label>
+                <input type="time" className={inputClass} {...register("horaInicio", { required: "Obligatorio" })} />
+                {errors.horaInicio && <span className="text-xs text-fuchsia-400">{errors.horaInicio.message}</span>}
+              </div>
+            </div>
+
+            {agendaEmpleado && (
+              <div className="text-xs text-gray-400 border border-cyan-500/20 rounded-lg p-3 space-y-2 bg-slate-900/60">
+                <p className="uppercase text-fuchsia-300">Agenda del empleado ese día</p>
+                {agendaEmpleado.citas?.length ? (
+                  agendaEmpleado.citas
+                    .filter((c) => c.estadoCita?.nombre !== "Cancelada")
+                    .map((c) => (
+                      <p key={c.id}>{c.horaInicio} - {c.horaFin} · {c.servicio?.nombre} ({c.estadoCita?.nombre})</p>
+                    ))
+                ) : (
+                  <p>Sin citas registradas ese día</p>
+                )}
+                <p className="uppercase text-fuchsia-300 pt-1">Restricciones ese día</p>
+                {agendaEmpleado.restricciones?.length ? (
+                  agendaEmpleado.restricciones.map((r) => (
+                    <p key={r.id}>{r.todoElDia ? "Todo el día" : `${r.horaInicio} - ${r.horaFin}`} · {r.tipoRestriccion?.nombre}</p>
+                  ))
+                ) : (
+                  <p>Sin restricciones ese día</p>
+                )}
+              </div>
+            )}
+
+            {(consultandoDisponibilidad || disponibilidad) && (
+              <p className={`text-xs ${disponibilidad?.disponible === false ? "text-fuchsia-400" : "text-emerald-400"}`}>
+                {consultandoDisponibilidad
+                  ? "Consultando disponibilidad..."
+                  : disponibilidad?.disponible
+                    ? "Horario disponible"
+                    : disponibilidad?.motivo || "Horario no disponible"}
+              </p>
+            )}
+
+            {adicionales.length > 0 && (
+              <div>
+                <label className={labelClass}>Adicionales</label>
+                <div className="border border-cyan-500/30 rounded-lg p-3 max-h-32 overflow-y-auto space-y-1 bg-slate-900/60">
+                  {adicionales.map((a) => (
+                    <label key={a.id} className="flex items-center gap-2 text-sm text-gray-300 cursor-pointer">
+                      <input type="checkbox" value={a.id} {...register("adicionalIds")} className="accent-cyan-400" />
+                      {a.nombre} (${a.precio})
+                    </label>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            <div>
+              <label className={labelClass}>Observaciones</label>
+              <input className={inputClass} {...register("observaciones")} />
+            </div>
+
+            <div className="text-xs text-gray-400 border-t border-cyan-500/20 pt-3 space-y-1">
+              <p>Duración total: {duracionMinutos || 0} minutos</p>
+              <p>Hora fin: {horaFin || "--:--"}</p>
+              <p>Costo total: ${costoTotal}</p>
+            </div>
+
+            {errorGeneral && <p className="text-fuchsia-400 text-sm">{errorGeneral}</p>}
+
+            <button type="submit" disabled={enviando || disponibilidad?.disponible === false} className={botonNeon}>
+              {enviando ? "Guardando..." : citaEditando ? "Guardar Cambios" : "Crear Cita"}
+            </button>
+          </form>
+        </Modal>
       )}
     </div>
   );

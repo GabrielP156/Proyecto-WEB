@@ -1,10 +1,11 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { CampoPassword } from "../components/CampoPassword";
-import { Button } from "../components/Button";
+import { Button } from "@/components/ui/button";
 import { AuthCard } from "../components/AuthCard";
-import { Label } from "../components/Label";
-import { Alert } from "../components/Alert";
+import { Label } from "@/components/ui/label";
+import { Alert } from "@/components/ui/alert";
+import { Input } from "@/components/ui/input";
 import heroImage from "../assets/eae7d108-19df-4175-99b7-7b9f8db8a108.jpg";
 import { useAuth } from "../services/auth/useAuth";
 
@@ -74,7 +75,7 @@ export function LoginPage() {
           <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
             <div>
               <Label required>Correo</Label>
-              <input
+              <Input
                 type="email"
                 name="correo"
                 value={formData.correo}
@@ -82,7 +83,6 @@ export function LoginPage() {
                 required
                 minLength={7}
                 placeholder="tu@correo.com"
-                className="w-full border rounded px-3 py-2"
               />
             </div>
 
@@ -97,7 +97,7 @@ export function LoginPage() {
               />
             </div>
 
-            {mensajeError && <Alert type="danger">{mensajeError}</Alert>}
+            {mensajeError && <Alert variant="danger">{mensajeError}</Alert>}
 
             <Button type="submit" disabled={loading}>
               {loading ? "Ingresando..." : "Ingresar"}

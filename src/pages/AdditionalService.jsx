@@ -6,7 +6,7 @@ import {
   updateServiceAdicional,
 } from "/src/services/additionalService.js";
 import { AuthCard } from "/src/components/AuthCard";
-import { Label } from "/src/components/Label";
+import { Label } from "@/components/ui/label";
 import { useForm } from "react-hook-form";
 import { useAuth } from "/src/services/auth/useAuth";
 
