@@ -70,6 +70,12 @@ async function uploadImage(token, filePath) {
   return data.fileName;
 }
 
+function fechaOffset(dias) {
+  const fecha = new Date();
+  fecha.setDate(fecha.getDate() + dias);
+  return fecha.toISOString().slice(0, 10);
+}
+
 function reportar(nombre, resultado) {
   if (resultado.ok) {
     console.log(`✔ ${nombre}`);
@@ -86,19 +92,21 @@ async function main() {
   // ---------- Servicios ----------
   console.log("\n--- Servicios ---");
   const especialidades = await get(token, "/especialidades");
-  const especialidadPool = especialidades.find((e) => e.nombre === "Bolos y Pool") || especialidades[0];
-  const especialidadVideojuegos = especialidades.find((e) => e.nombre === "Videojuegos") || especialidades[0];
+  const especialidadGeneral = especialidades.find((e) => e.nombre === "General") || especialidades[0];
 
   const imagenPool = await uploadImage(token, "src/assets/image.png");
   const imagenPlaystation = await uploadImage(token, "src/assets/arcade_neon_machine (1).png");
 
+  // Nota: los servicios se crean en la misma especialidad que los empleados
+  // (más abajo) porque la API exige que cada servicio asignado a un empleado
+  // comparta su especialidad.
   const nuevosServicios = [
     {
       nombre: "pool",
       descripcion: "mesa de pool para minimo 2 personas",
       precioBase: 15000,
       duracionMinutos: 90,
-      especialidadId: especialidadPool.id,
+      especialidadId: especialidadGeneral.id,
       imagen: imagenPool,
     },
     {
@@ -106,7 +114,7 @@ async function main() {
       descripcion: "estacion de playstation para minimo 2 personas",
       precioBase: 10000,
       duracionMinutos: 45,
-      especialidadId: especialidadVideojuegos.id,
+      especialidadId: especialidadGeneral.id,
       imagen: imagenPlaystation,
     },
   ];
@@ -136,7 +144,6 @@ async function main() {
   // ---------- Empleados ----------
   console.log("\n--- Empleados ---");
   const usuariosEmpleado = await get(token, "/usuarios?rol=Empleado");
-  const especialidadGeneral = especialidades.find((e) => e.nombre === "General") || especialidades[0];
   const servicioIds = servicios.map((s) => s.id);
 
   const codigos = ["EMP-CAR", "EMP-DIA", "EMP-LUI"];
@@ -168,7 +175,7 @@ async function main() {
     {
       tipoRestriccionId: tipoDiaCompleto.id,
       empleadoId: null,
-      fecha: "2026-09-15",
+      fecha: fechaOffset(25),
       horaInicio: null,
       horaFin: null,
       todoElDia: true,
@@ -177,7 +184,7 @@ async function main() {
     {
       tipoRestriccionId: tipoGeneral.id,
       empleadoId: null,
-      fecha: "2026-09-05",
+      fecha: fechaOffset(15),
       horaInicio: "14:00",
       horaFin: "16:00",
       todoElDia: false,
@@ -186,7 +193,7 @@ async function main() {
     {
       tipoRestriccionId: tipoParcial.id,
       empleadoId: empleados[0]?.id ?? null,
-      fecha: "2026-08-28",
+      fecha: fechaOffset(5),
       horaInicio: "09:00",
       horaFin: "11:00",
       todoElDia: false,
@@ -195,7 +202,7 @@ async function main() {
     {
       tipoRestriccionId: tipoParcial.id,
       empleadoId: empleados[1]?.id ?? null,
-      fecha: "2026-08-29",
+      fecha: fechaOffset(6),
       horaInicio: "18:00",
       horaFin: "20:00",
       todoElDia: false,
@@ -204,7 +211,7 @@ async function main() {
     {
       tipoRestriccionId: tipoEmpleado.id,
       empleadoId: empleados[2]?.id ?? null,
-      fecha: "2026-09-01",
+      fecha: fechaOffset(10),
       horaInicio: null,
       horaFin: null,
       todoElDia: true,
@@ -238,20 +245,23 @@ async function main() {
   const servicioPool = servicios.find((s) => s.nombre === "pool");
   const servicioPlaystation = servicios.find((s) => s.nombre === "playstation");
 
+  // Nota: la API no permite crear citas con fecha pasada (ni "hoy" en algunos
+  // casos según la hora del servidor), así que las citas "Finalizada" también
+  // se crean en una fecha futura y luego se les cambia el estado manualmente.
   const planCitas = [
-    { fecha: "2026-08-24", hora: "11:00", servicio: servicioBolos, empleadoIdx: 0, estadoDestino: estadoPendiente },
-    { fecha: "2026-08-24", hora: "15:00", servicio: servicioFutbolin, empleadoIdx: 1, estadoDestino: estadoPendiente },
-    { fecha: "2026-08-25", hora: "10:00", servicio: servicioPool, empleadoIdx: 2, estadoDestino: estadoPendiente },
-    { fecha: "2026-08-25", hora: "17:00", servicio: servicioPlaystation, empleadoIdx: 0, estadoDestino: estadoPendiente },
-    { fecha: "2026-08-26", hora: "11:00", servicio: servicioBolos, empleadoIdx: 1, estadoDestino: estadoConfirmada },
-    { fecha: "2026-08-26", hora: "16:00", servicio: servicioFutbolin, empleadoIdx: 2, estadoDestino: estadoConfirmada },
-    { fecha: "2026-08-27", hora: "10:00", servicio: servicioPool, empleadoIdx: 0, estadoDestino: estadoConfirmada },
-    { fecha: "2026-08-27", hora: "18:00", servicio: servicioPlaystation, empleadoIdx: 1, estadoDestino: estadoConfirmada },
-    { fecha: "2026-08-23", hora: "11:00", servicio: servicioBolos, empleadoIdx: 2, estadoDestino: estadoFinalizada },
-    { fecha: "2026-08-23", hora: "14:00", servicio: servicioFutbolin, empleadoIdx: 0, estadoDestino: estadoFinalizada },
-    { fecha: "2026-08-23", hora: "16:00", servicio: servicioPool, empleadoIdx: 1, estadoDestino: estadoFinalizada },
-    { fecha: "2026-08-28", hora: "11:00", servicio: servicioBolos, empleadoIdx: 2, estadoDestino: estadoCancelada },
-    { fecha: "2026-08-28", hora: "15:00", servicio: servicioPlaystation, empleadoIdx: 0, estadoDestino: estadoCancelada },
+    { fecha: fechaOffset(1), hora: "11:00", servicio: servicioBolos, empleadoIdx: 0, estadoDestino: estadoPendiente },
+    { fecha: fechaOffset(1), hora: "15:00", servicio: servicioFutbolin, empleadoIdx: 1, estadoDestino: estadoPendiente },
+    { fecha: fechaOffset(2), hora: "10:00", servicio: servicioPool, empleadoIdx: 2, estadoDestino: estadoPendiente },
+    { fecha: fechaOffset(2), hora: "17:00", servicio: servicioPlaystation, empleadoIdx: 0, estadoDestino: estadoPendiente },
+    { fecha: fechaOffset(3), hora: "11:00", servicio: servicioBolos, empleadoIdx: 1, estadoDestino: estadoConfirmada },
+    { fecha: fechaOffset(3), hora: "16:00", servicio: servicioFutbolin, empleadoIdx: 2, estadoDestino: estadoConfirmada },
+    { fecha: fechaOffset(4), hora: "10:00", servicio: servicioPool, empleadoIdx: 0, estadoDestino: estadoConfirmada },
+    { fecha: fechaOffset(4), hora: "18:00", servicio: servicioPlaystation, empleadoIdx: 1, estadoDestino: estadoConfirmada },
+    { fecha: fechaOffset(8), hora: "10:00", servicio: servicioBolos, empleadoIdx: 2, estadoDestino: estadoFinalizada },
+    { fecha: fechaOffset(8), hora: "13:00", servicio: servicioFutbolin, empleadoIdx: 0, estadoDestino: estadoFinalizada },
+    { fecha: fechaOffset(8), hora: "15:00", servicio: servicioPool, empleadoIdx: 1, estadoDestino: estadoFinalizada },
+    { fecha: fechaOffset(5), hora: "11:00", servicio: servicioBolos, empleadoIdx: 2, estadoDestino: estadoCancelada },
+    { fecha: fechaOffset(5), hora: "15:00", servicio: servicioPlaystation, empleadoIdx: 0, estadoDestino: estadoCancelada },
   ];
 
   for (const plan of planCitas) {
