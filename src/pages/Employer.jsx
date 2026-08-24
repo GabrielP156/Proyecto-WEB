@@ -2,8 +2,13 @@ import { useForm } from "react-hook-form";
 import { useState, useEffect } from "react";
 import {getEspecialidad,ListAllEmployers,CreateEmployer,updateEmployer,setStateEmployer,getAgendaEmpleado} from "/src/services/EmployerService";
 import { ListAllService } from "/src/services/Servicios";
+import { useAuth } from "/src/services/auth/useAuth";
+import { Table } from "/src/components/Table";
+import { Modal } from "/src/components/Modal";
 
 export default function Employer() {
+  const { usuario } = useAuth();
+  const esAdmin = usuario?.rol?.nombre === "Administrador";
   const [empleados, setEmpleados] = useState([]);
   const [servicios, setServicios] = useState([]);
   const [especialidades, setEspecialidades] = useState([]);
@@ -17,6 +22,8 @@ export default function Employer() {
   const [empleado, setEmpleado] = useState(null);
   const [fechaAgenda, setFechaAgenda] = useState("");
   const [agenda, setAgenda] = useState(null);
+  const [ordenColumna, setOrdenColumna] = useState("usuario");
+  const [ordenAsc, setOrdenAsc] = useState(true);
 
   const { register, handleSubmit, reset, formState: { errors } } = useForm({
     defaultValues: {
@@ -133,6 +140,35 @@ export default function Employer() {
     "text-cyan-300 transition-all duration-300 cursor-pointer hover:border-fuchsia-500/70 " +
     "hover:text-fuchsia-300 hover:shadow-[0_0_20px_rgba(217,70,239,0.35)]";
 
+  function ordenarPor(columna) {
+    if (ordenColumna === columna) {
+      setOrdenAsc(!ordenAsc);
+    } else {
+      setOrdenColumna(columna);
+      setOrdenAsc(true);
+    }
+  }
+
+  const empleadosOrdenados = [...empleados].sort((a, b) => {
+    let valorA, valorB;
+    if (ordenColumna === "especialidad") {
+      valorA = a.especialidad?.nombre || "";
+      valorB = b.especialidad?.nombre || "";
+    } else if (ordenColumna === "codigo") {
+      valorA = a.codigoEmpleado || "";
+      valorB = b.codigoEmpleado || "";
+    } else if (ordenColumna === "estado") {
+      valorA = a.activo ? 1 : 0;
+      valorB = b.activo ? 1 : 0;
+    } else {
+      valorA = a.usuario?.nombre || "";
+      valorB = b.usuario?.nombre || "";
+    }
+    if (valorA < valorB) return ordenAsc ? -1 : 1;
+    if (valorA > valorB) return ordenAsc ? 1 : -1;
+    return 0;
+  });
+
       return (
     <div className="relative w-full min-h-screen bg-black text-gray-200 font-mono p-6 overflow-hidden">
       <div className="absolute top-[8%] left-[4%] -z-0 [animation-delay:-1s] after:content-[''] after:block after:w-28 after:h-28 after:rounded-full after:bg-pink-500 after:border-4 after:border-pink-500 after:shadow-[0_0_20px_rgba(236,72,153,0.9),0_0_40px_rgba(236,72,153,0.6)] animate-flotar1"></div>
@@ -144,149 +180,133 @@ export default function Employer() {
           <h1 className="text-3xl font-black italic uppercase tracking-tighter bg-gradient-to-r from-cyan-400 via-fuchsia-400 to-cyan-400 bg-clip-text text-transparent drop-shadow-[0_0_20px_rgba(34,211,238,0.5)] bg-[length:200%_auto] [animation:shimmer_4s_ease-in-out_infinite]">
             Gestión Empleados
           </h1>
-          <button onClick={abrirCrear} className={botonNeon}>+ Nuevo Empleado</button>
+          {esAdmin && (
+            <button onClick={abrirCrear} className={botonNeon}>+ Nuevo Empleado</button>
+          )}
         </header>
 
-               {/* Tabla de empleados */}
-        <div className="relative group">
-          <div className="absolute -inset-0.5 bg-gradient-to-r from-pink-500 to-accent rounded-2xl blur-md opacity-40 group-hover:opacity-70 transition duration-500" />
-          <div className="relative bg-neutral-900/90 border border-pink-500/40 rounded-2xl p-6 min-h-[400px]">
-            <table className="w-full text-left text-sm text-gray-300">
-              <thead className="text-pink-300 uppercase text-xs border-b border-pink-500/30">
-                <tr>
-                  <th className="px-4 py-3">Usuario</th>
-                  <th className="px-4 py-3">Especialidad</th>
-                  <th className="px-4 py-3">Código</th>
-                  <th className="px-4 py-3">Estado</th>
-                </tr>
-              </thead>
-              <tbody>
-                {empleados.length === 0 ? (
-                  <tr><td colSpan={4} className="px-4 py-6 text-center text-gray-500">Sin empleados aún</td></tr>
-                ) : (
-                  empleados.map((item) => (
-                    <tr
-                      key={item.id}
-                      onClick={() => verDetalles(item)}
-                      className="border-b border-pink-500/10 hover:bg-pink-500/5 cursor-pointer transition-colors"
-                    >
-                      <td className="px-4 py-3">{item.usuario?.nombre} {item.usuario?.primerApellido}</td>
-                      <td className="px-4 py-3">{item.especialidad?.nombre}</td>
-                      <td className="px-4 py-3">{item.codigoEmpleado}</td>
-                      <td className="px-4 py-3">{item.activo ? "Activo" : "Desactivado"}</td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
-        </div>
+        <Table
+          columns={[
+            { key: "usuario", label: "Usuario", sortable: true, render: (item) => `${item.usuario?.nombre} ${item.usuario?.primerApellido}` },
+            { key: "especialidad", label: "Especialidad", sortable: true, render: (item) => item.especialidad?.nombre },
+            { key: "codigo", label: "Código", sortable: true, render: (item) => item.codigoEmpleado },
+            { key: "estado", label: "Estado", sortable: true, render: (item) => (item.activo ? "Activo" : "Desactivado") },
+          ]}
+          data={empleadosOrdenados}
+          onRowClick={verDetalles}
+          sortColumn={ordenColumna}
+          sortAsc={ordenAsc}
+          onSort={ordenarPor}
+          emptyMessage="Sin empleados aún"
+        />
       </div>
 
       {/* Modal ver Detalle */}
       {modalDetalles && empleado && (
-        <div onClick={() => setModalDetalles(false)} className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
-          <div onClick={(e) => e.stopPropagation()} className="relative group max-h-[85vh] w-full max-w-lg">
-            <div className="absolute -inset-0.5 bg-gradient-to-r from-cyan-500 to-pink-500 rounded-2xl blur-md opacity-60" />
-            <div className="relative bg-neutral-900/90 border border-cyan-500/30 rounded-2xl p-6 overflow-y-auto max-h-[85vh]">
-              <button onClick={() => setModalDetalles(false)} className="absolute top-3 right-3 text-white bg-black/60 hover:bg-fuchsia-600 w-8 h-8 rounded-full flex items-center justify-center">✕</button>
+        <Modal onClose={() => setModalDetalles(false)}>
+          <h3 className="text-xl font-bold uppercase text-cyan-300">{empleado.usuario?.nombre} {empleado.usuario?.primerApellido}</h3>
+          <p className="text-sm text-gray-400 mt-1">{empleado.codigoEmpleado} — {empleado.especialidad?.nombre}</p>
 
-              <h3 className="text-xl font-bold uppercase text-cyan-300">{empleado.usuario?.nombre} {empleado.usuario?.primerApellido}</h3>
-              <p className="text-sm text-gray-400 mt-1">{empleado.codigoEmpleado} — {empleado.especialidad?.nombre}</p>
-
-              <div className="flex gap-2 mt-4">
+          <div className="flex gap-2 mt-4">
+            {esAdmin ? (
+              <>
                 <button onClick={() => abrirEditar(empleado)} className="text-xs px-3 py-1 border border-cyan-400/50 rounded text-cyan-300 hover:bg-cyan-500/20">Editar</button>
                 <button onClick={() => activarDesactivar(empleado)} className="text-xs px-3 py-1 border border-cyan-400/50 rounded text-cyan-300 hover:bg-cyan-500/20">
                   {empleado.activo ? "Activo" : "Desactivado"}
                 </button>
-              </div>
-
-              <p className="text-xs uppercase text-fuchsia-300 mt-4 mb-1">Servicios</p>
-              <p className="text-sm text-gray-300">{empleado.servicios?.map((s) => s.nombre).join(", ") || "Ninguno"}</p>
-
-              <p className="text-xs uppercase text-fuchsia-300 mt-4 mb-1">Restricciones</p>
-              <p className="text-sm text-gray-300">
-                {empleado.restricciones?.length ? `${empleado.restricciones.length} registradas` : "Sin restricciones"}
-              </p>
-
-              <p className="text-xs uppercase text-fuchsia-300 mt-4 mb-1">Agenda</p>
-              <div className="flex gap-2">
-                <input type="date" value={fechaAgenda} onChange={(e) => setFechaAgenda(e.target.value)} className={inputClass} />
-                <button onClick={consultarAgenda} className="text-xs px-3 py-2 border border-cyan-500/50 rounded text-cyan-300 hover:bg-cyan-500/20">Ver</button>
-              </div>
-              {agenda && (
-                <p className="text-xs text-gray-300 mt-2">
-                  {agenda.citas?.length ? `${agenda.citas.length} citas ese día` : "Sin citas ese día"}
-                </p>
-              )}
-            </div>
+              </>
+            ) : (
+              <span className="text-xs px-3 py-1 border border-cyan-400/50 rounded text-cyan-300">
+                {empleado.activo ? "Activo" : "Desactivado"}
+              </span>
+            )}
           </div>
-        </div>
+
+          <p className="text-xs uppercase text-fuchsia-300 mt-4 mb-1">Servicios</p>
+          <p className="text-sm text-gray-300">{empleado.servicios?.map((s) => s.nombre).join(", ") || "Ninguno"}</p>
+
+          <p className="text-xs uppercase text-fuchsia-300 mt-4 mb-1">Restricciones</p>
+          <p className="text-sm text-gray-300">
+            {empleado.restricciones?.length ? `${empleado.restricciones.length} registradas` : "Sin restricciones"}
+          </p>
+
+          <p className="text-xs uppercase text-fuchsia-300 mt-4 mb-1">Agenda</p>
+          <div className="flex gap-2">
+            <input type="date" value={fechaAgenda} onChange={(e) => setFechaAgenda(e.target.value)} className={inputClass} />
+            <button onClick={consultarAgenda} className="text-xs px-3 py-2 border border-cyan-500/50 rounded text-cyan-300 hover:bg-cyan-500/20">Ver</button>
+          </div>
+          {agenda && (
+            <p className="text-xs text-gray-300 mt-2">
+              {agenda.citas?.length ? `${agenda.citas.length} citas ese día` : "Sin citas ese día"}
+            </p>
+          )}
+        </Modal>
       )}
 
       {/* Modal Crear/Editar */}
       {modal && (
-        <div onClick={cerrarModal} className="fixed inset-0 z-50 bg-black/90 backdrop-blur-sm flex items-center justify-center p-4">
-          <div onClick={(e) => e.stopPropagation()} className="relative group max-h-[90vh] w-full max-w-md">
-            <div className="absolute -inset-0.5 bg-gradient-to-r from-cyan-500 to-pink-500 rounded-2xl blur-md opacity-60" />
-            <div className="relative bg-neutral-900/90 border border-cyan-500/30 rounded-2xl p-6 overflow-y-auto max-h-[90vh]">
-              <button type="button" onClick={cerrarModal} className="absolute top-3 right-3 text-gray-400 hover:text-white bg-white/10 rounded-full w-8 h-8 flex items-center justify-center">✕</button>
+        <Modal onClose={cerrarModal} maxWidth="max-w-md" maxHeight="max-h-[90vh]" dark>
+          <h2 className="text-sm uppercase text-fuchsia-300 mb-4">
+            {empleadoEditando ? "Editar Empleado" : "Crear Empleado"}
+          </h2>
 
-              <h2 className="text-sm uppercase text-fuchsia-300 mb-4">
-                {empleadoEditando ? "Editar Empleado" : "Crear Empleado"}
-              </h2>
-
-              <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
-                <div>
-                  <label className={labelClass}>ID de Usuario</label>
-                  <input type="number" className={inputClass} {...register("usuarioId", { required: "Obligatorio" })} />
-                  {errors.usuarioId && <span className="text-xs text-fuchsia-400">{errors.usuarioId.message}</span>}
-                </div>
-
-                <div>
-                  <label className={labelClass}>Especialidad</label>
-                  <select className={inputClass} {...register("especialidadId", { required: "Selecciona una" })}>
-                    <option value="">-- Selecciona --</option>
-                    {especialidades.map((esp) => (
-                      <option key={esp.id} value={esp.id}>{esp.nombre}</option>
-                    ))}
-                  </select>
-                  {errors.especialidadId && <span className="text-xs text-fuchsia-400">{errors.especialidadId.message}</span>}
-                </div>
-
-                <div>
-                  <label className={labelClass}>Código Empleado</label>
-                  <input placeholder="EMP-001" className={inputClass} {...register("codigoEmpleado", { required: "Obligatorio", minLength: { value: 3, message: "Mínimo 3 caracteres" } })} />
-                  {errors.codigoEmpleado && <span className="text-xs text-fuchsia-400">{errors.codigoEmpleado.message}</span>}
-                </div>
-
-                <div>
-                  <label className={labelClass}>Descripción</label>
-                  <input className={inputClass} {...register("descripcion")} />
-                </div>
-
-                <div>
-                  <label className={labelClass}>Servicios</label>
-                  <div className="border border-cyan-500/30 rounded-lg p-3 max-h-32 overflow-y-auto space-y-1 bg-slate-900/60">
-                    {servicios.map((s) => (
-                      <label key={s.id} className="flex items-center gap-2 text-sm text-gray-300 cursor-pointer">
-                        <input type="checkbox" value={s.id} {...register("servicioIds", { validate: (v) => v?.length > 0 || "Selecciona al menos uno" })} className="accent-cyan-400" />
-                        {s.nombre}
-                      </label>
-                    ))}
-                  </div>
-                  {errors.servicioIds && <span className="text-xs text-fuchsia-400">{errors.servicioIds.message}</span>}
-                </div>
-
-                {errorGeneral && <p className="text-fuchsia-400 text-sm">{errorGeneral}</p>}
-
-                <button type="submit" disabled={enviando} className={botonNeon}>
-                  {enviando ? "Guardando..." : empleadoEditando ? "Guardar Cambios" : "Crear Empleado"}
-                </button>
-              </form>
+          <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
+            <div>
+              <label className={labelClass}>ID de Usuario</label>
+              <input type="number" className={inputClass} {...register("usuarioId", { required: "Obligatorio" })} />
+              {errors.usuarioId && <span className="text-xs text-fuchsia-400">{errors.usuarioId.message}</span>}
             </div>
-          </div>
-        </div>
+
+            <div>
+              <label className={labelClass}>Especialidad *</label>
+              <select className={inputClass} {...register("especialidadId", { required: "Selecciona una" })}>
+                <option value="">-- Selecciona --</option>
+                {especialidades.map((esp) => (
+                  <option key={esp.id} value={esp.id}>{esp.nombre}</option>
+                ))}
+              </select>
+              {errors.especialidadId && <span className="text-xs text-fuchsia-400">{errors.especialidadId.message}</span>}
+            </div>
+
+            <div>
+              <label className={labelClass}>Código Empleado *</label>
+              <input
+                placeholder="EMP-001"
+                className={inputClass}
+                {...register("codigoEmpleado", {
+                  required: "Obligatorio",
+                  minLength: { value: 3, message: "Mínimo 3 caracteres" },
+                  pattern: { value: /^[a-zA-Z0-9_-]+$/, message: "Solo letras, números, guion y guion bajo" },
+                })}
+              />
+              {errors.codigoEmpleado && <span className="text-xs text-fuchsia-400">{errors.codigoEmpleado.message}</span>}
+            </div>
+
+            <div>
+              <label className={labelClass}>Descripción</label>
+              <input className={inputClass} {...register("descripcion")} />
+            </div>
+
+            <div>
+              <label className={labelClass}>Servicios *</label>
+              <div className="border border-cyan-500/30 rounded-lg p-3 max-h-32 overflow-y-auto space-y-1 bg-slate-900/60">
+                {servicios.map((s) => (
+                  <label key={s.id} className="flex items-center gap-2 text-sm text-gray-300 cursor-pointer">
+                    <input type="checkbox" value={s.id} {...register("servicioIds", { validate: (v) => v?.length > 0 || "Selecciona al menos uno" })} className="accent-cyan-400" />
+                    {s.nombre}
+                  </label>
+                ))}
+              </div>
+              {errors.servicioIds && <span className="text-xs text-fuchsia-400">{errors.servicioIds.message}</span>}
+            </div>
+
+            {errorGeneral && <p className="text-fuchsia-400 text-sm">{errorGeneral}</p>}
+
+            <button type="submit" disabled={enviando} className={botonNeon}>
+              {enviando ? "Guardando..." : empleadoEditando ? "Guardar Cambios" : "Crear Empleado"}
+            </button>
+          </form>
+        </Modal>
       )}
     </div>
   );

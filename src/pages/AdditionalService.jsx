@@ -5,11 +5,14 @@ import {
   setStateAdicional,
   updateServiceAdicional,
 } from "/src/services/additionalService.js";
-import { AuthCard } from "/src/components/AuthCard";
-import { Label } from "/src/components/Label";
+import { Modal } from "/src/components/Modal";
+import { Label } from "@/components/ui/label";
 import { useForm } from "react-hook-form";
+import { useAuth } from "/src/services/auth/useAuth";
 
 export function Aditional() {
+  const { usuario } = useAuth();
+  const esAdmin = usuario?.rol?.nombre === "Administrador";
   const [elementos, setElementos] = useState([]);
   const [modal, setModal] = useState(false);
   const { register, handleSubmit, reset, formState: { errors } } = useForm();
@@ -18,6 +21,7 @@ export function Aditional() {
   const [modalDetalles, setModalDetalles] = useState(false);
   const [servicio, setServicio] = useState(null);
   const [servicioEditando, setServicioEditando] = useState(null);
+  const [orden, setOrden] = useState("nombre");
 
   function cerrarModal() {
     setModal(false);
@@ -107,18 +111,36 @@ export function Aditional() {
     }
   }
 
+  const elementosOrdenados = [...elementos].sort((a, b) => {
+    if (orden === "precio") return Number(a.precio) - Number(b.precio);
+    return (a.nombre || "").localeCompare(b.nombre || "");
+  });
+
   return (
     <section className="p-6">
-      <button
-        className="relative rounded-md top-8 left-33 mb-8 px-5 py-2 font-mono uppercase tracking-wide text-sm
-             bg-black/70 border border-cyan-500/50 text-cyan-300
-             transition-all duration-300 cursor-pointer
-             hover:border-fuchsia-500/70 hover:text-fuchsia-300
-             hover:shadow-[0_0_20px_rgba(217,70,239,0.35)]"
-        onClick={abrirCrear}
-      >
-        Crear Servicio Adicional
-      </button>
+      <div className="flex flex-wrap items-center gap-4 mb-4">
+        {esAdmin && (
+          <button
+            className="relative rounded-md top-8 left-4 sm:left-33 mb-8 px-5 py-2 font-mono uppercase tracking-wide text-sm
+               bg-black/70 border border-cyan-500/50 text-cyan-300
+               transition-all duration-300 cursor-pointer
+               hover:border-fuchsia-500/70 hover:text-fuchsia-300
+               hover:shadow-[0_0_20px_rgba(217,70,239,0.35)]"
+            onClick={abrirCrear}
+          >
+            Crear Servicio Adicional
+          </button>
+        )}
+
+        <select
+          value={orden}
+          onChange={(e) => setOrden(e.target.value)}
+          className="relative top-8 left-4 sm:left-33 mb-8 px-3 py-2 bg-slate-900/80 border border-cyan-500/30 text-white rounded text-xs font-mono uppercase"
+        >
+          <option value="nombre">Ordenar por nombre</option>
+          <option value="precio">Ordenar por precio</option>
+        </select>
+      </div>
 
       {/* Modal ver Detalle */}
       {modalDetalles && servicio && (
@@ -130,12 +152,14 @@ export function Aditional() {
             onClick={(e) => e.stopPropagation()}
             className="relative min-h-[250px] min-w-[300px] max-w-[600px] w-full bg-slate-900 rounded-lg overflow-hidden border border-cyan-500 shadow-[0_0_30px_rgba(6,182,212,0.3)] p-6 font-mono"
           >
-            <button
-              onClick={() => abrirEditar(servicio)}
-              className="absolute top-3 left-3 z-30 text-cyan-300 bg-black/60 hover:bg-cyan-600 hover:text-white px-3 py-1 rounded text-xs font-mono uppercase tracking-wide transition-colors"
-            >
-              Editar
-            </button>
+            {esAdmin && (
+              <button
+                onClick={() => abrirEditar(servicio)}
+                className="absolute top-3 left-3 z-30 text-cyan-300 bg-black/60 hover:bg-cyan-600 hover:text-white px-3 py-1 rounded text-xs font-mono uppercase tracking-wide transition-colors"
+              >
+                Editar
+              </button>
+            )}
             <button
               onClick={cerrarModalDetalles}
               className="absolute top-3 right-3 z-30 text-white bg-black/60 hover:bg-fuchsia-600 w-8 h-8 rounded-full flex items-center justify-center transition-colors"
@@ -153,20 +177,26 @@ export function Aditional() {
               <span className="mx-2 self-start text-sm px-3 py-1 border border-cyan-400/50 text-cyan-300 rounded bg-black/40">
                 Precio: ${servicio.precio}
               </span>
-              <button
-                onClick={() => activarDesactivar(servicio)}
-                className="bg-cyan-400/50 text-white hover:bg-white/80 hover:text-blue-700 mx-2 text-sm px-3 py-1 border border-cyan-400/50 rounded bg-black/40 cursor-pointer transition-colors"
-              >
-                {servicio.activo === true ? "Activo" : "Desactivado"}
-              </button>
+              {esAdmin ? (
+                <button
+                  onClick={() => activarDesactivar(servicio)}
+                  className="bg-cyan-400/50 text-white hover:bg-white/80 hover:text-blue-700 mx-2 text-sm px-3 py-1 border border-cyan-400/50 rounded bg-black/40 cursor-pointer transition-colors"
+                >
+                  {servicio.activo === true ? "Activo" : "Desactivado"}
+                </button>
+              ) : (
+                <span className="mx-2 text-sm px-3 py-1 border border-cyan-400/50 text-cyan-300 rounded bg-black/40">
+                  {servicio.activo === true ? "Activo" : "Desactivado"}
+                </span>
+              )}
             </div>
           </div>
         </div>
       )}
 
       {/* Grid de tarjetas */}
-      <div className="w-[85vw] relative top-10 min-h-[85vh] h-auto bg-transparent grid grid-cols-4 auto-rows-[minmax(150px,auto)] gap-14 p-4 m-auto">
-        {elementos.map((elementos) => (
+      <div className="w-full sm:w-[85vw] relative top-10 min-h-[85vh] h-auto bg-transparent grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 auto-rows-[minmax(150px,auto)] gap-6 lg:gap-14 p-4 m-auto">
+        {elementosOrdenados.map((elementos) => (
           <div
             onClick={() => verDetalles(elementos)}
             key={elementos.id}
@@ -190,22 +220,14 @@ export function Aditional() {
 
       {/* Modal para crear/editar */}
       {modal && (
-        <AuthCard
-          className="-top-18 left-0 absolute h-screen w-screen bg-black/90 backdrop-blur-sm z-50 flex items-center justify-center"
-          title={servicioEditando ? "Editar Servicio Adicional" : "Crear Servicio Adicional"}
-          onClick={cerrarModal}
-        >
-          <div className="relative pt-2">
-            <button
-              type="button"
-              onClick={cerrarModal}
-              className="absolute -top-12 right-0 text-gray-400 hover:text-white bg-white/10 hover:bg-white/20 rounded-full w-8 h-8 flex items-center justify-center transition-all cursor-pointer"
-            >
-              ✕
-            </button>
+        <Modal onClose={cerrarModal} maxWidth="max-w-md" maxHeight="max-h-[90vh]">
+          <h2 className="text-sm uppercase text-fuchsia-300 mb-4">
+            {servicioEditando ? "Editar Servicio Adicional" : "Crear Servicio Adicional"}
+          </h2>
 
+          <div className="relative pt-2">
             <form className="flex flex-col" onSubmit={handleSubmit(onSubmit)}>
-              <Label>Nombre</Label>
+              <Label required>Nombre</Label>
               <input
                 placeholder="Nombre"
                 className="w-full border border-cyan-500/30 bg-slate-900/80 text-white rounded px-3 py-2 mt-1 mb-1 focus:outline-none focus:border-cyan-400"
@@ -216,7 +238,7 @@ export function Aditional() {
               />
               {errors.nombre && <span className="text-red-400 text-xs mb-2">{errors.nombre.message}</span>}
 
-              <Label>Descripción</Label>
+              <Label required>Descripción</Label>
               <input
                 placeholder="Descripción"
                 className="w-full border border-cyan-500/30 bg-slate-900/80 text-white rounded px-3 py-2 mt-1 mb-1 focus:outline-none focus:border-cyan-400"
@@ -227,7 +249,7 @@ export function Aditional() {
               />
               {errors.descripcion && <span className="text-red-400 text-xs mb-2">{errors.descripcion.message}</span>}
 
-              <Label>Precio</Label>
+              <Label required>Precio</Label>
               <input
                 type="number"
                 placeholder="3000"
@@ -256,7 +278,7 @@ export function Aditional() {
               </button>
             </form>
           </div>
-        </AuthCard>
+        </Modal>
       )}
     </section>
   );
