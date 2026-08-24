@@ -1,19 +1,18 @@
 import { useState } from "react";
-import { Input } from "@/components/ui/input";
 
 export function CampoPassword({ value, onChange, name, required, minLength }) {
   const [visible, setVisible] = useState(false);
 
   return (
     <div className="relative">
-      <Input
+      <input
         type={visible ? "text" : "password"}
         name={name}
         value={value}
         onChange={onChange}
         required={required}
         minLength={minLength}
-        className="pr-16"
+        className="w-full border rounded px-3 py-2 pr-16"
       />
       <button
         type="button"

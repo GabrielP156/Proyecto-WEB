@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import { Button } from "../components/Button";
+import { Badge } from "../components/Badge";
 import heroImage from "../assets/ruckus-games-untitled-game-arcade.png";
 
 
@@ -72,14 +72,14 @@ export function HomePage() {
 
         <div className="flex gap-3 flex-wrap justify-center pt-8">
           {JUEGOS.map((juego) => (
-            <Badge key={juego} variant="info">
+            <Badge key={juego} color="info">
               {juego}
             </Badge>
           ))}
         </div>
 
         <div className="pt-12 flex gap-6 justify-center relative -z-80">
-          <Link to="/service">
+          <Link to="/servicios">
             <Button>Ver juegos</Button>
           </Link>
           <Link to="/login">

@@ -1,14 +1,11 @@
 import { useState, useEffect } from "react";
 import { ListAllService, CreateService, getEspecialidad, uploadImagen, setState, updateService } from "/src/services/Servicios";
-import { Modal } from "/src/components/Modal";
-import { Label } from "@/components/ui/label";
+import { AuthCard } from "/src/components/AuthCard";
+import { Label } from "/src/components/Label";
 import { useForm } from "react-hook-form";
 import { API_URL } from "/src/services/api";
-import { useAuth } from "/src/services/auth/useAuth";
 
 export function Service() {
-  const { usuario } = useAuth();
-  const esAdmin = usuario?.rol?.nombre === "Administrador";
   const [elementos, setElementos] = useState([]);
   const [modal, setModal] = useState(false);
   const [especialidad, setEspecialidad] = useState([]);
@@ -19,7 +16,6 @@ export function Service() {
   const [modalDetalles, setModalDetalles] = useState(false);
   const [servicio, setServicio] = useState(null);
   const [servicioEditando, setServicioEditando] = useState(null);
-  const [orden, setOrden] = useState("nombre");
 
   // Cerrar Modal de crear/editar
   function cerrarModal() {
@@ -138,39 +134,19 @@ export function Service() {
       );
 }
 
-  const elementosOrdenados = [...elementos].sort((a, b) => {
-    if (orden === "precio") return Number(a.precioBase) - Number(b.precioBase);
-    if (orden === "duracion") return Number(a.duracionMinutos) - Number(b.duracionMinutos);
-    return (a.nombre || "").localeCompare(b.nombre || "");
-  });
-
   return (
     <section className="p-6">
       {/* Botón para abrir el modal */}
-      <div className="flex flex-wrap items-center gap-4 mb-4">
-        {esAdmin && (
-          <button
-            className="relative rounded-md top-8 left-4 sm:left-33 mb-8 px-5 py-2 font-mono uppercase tracking-wide text-sm
-               bg-black/70 border border-cyan-500/50 text-cyan-300
-               transition-all duration-300 cursor-pointer
-               hover:border-fuchsia-500/70 hover:text-fuchsia-300
-               hover:shadow-[0_0_20px_rgba(217,70,239,0.35)]"
-            onClick={abrirCrear}
-          >
-            Crear Servicio
-          </button>
-        )}
-
-        <select
-          value={orden}
-          onChange={(e) => setOrden(e.target.value)}
-          className="relative top-8 left-4 sm:left-33 mb-8 px-3 py-2 bg-slate-900/80 border border-cyan-500/30 text-white rounded text-xs font-mono uppercase"
-        >
-          <option value="nombre">Ordenar por nombre</option>
-          <option value="precio">Ordenar por precio</option>
-          <option value="duracion">Ordenar por duración</option>
-        </select>
-      </div>
+      <button
+        className="relative rounded-md top-8 left-33 mb-8 px-5 py-2 font-mono uppercase tracking-wide text-sm
+             bg-black/70 border border-cyan-500/50 text-cyan-300
+             transition-all duration-300 cursor-pointer
+             hover:border-fuchsia-500/70 hover:text-fuchsia-300
+             hover:shadow-[0_0_20px_rgba(217,70,239,0.35)]"
+        onClick={abrirCrear}
+      >
+        Crear Servicio
+      </button>
 
       {/* Modal ver Detalle */}
       {modalDetalles && servicio && (
@@ -180,17 +156,15 @@ export function Service() {
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            className="relative min-h-[300px] h-[80vh] sm:h-[600px] min-w-[300px] max-w-[800px] w-full bg-slate-900 rounded-lg overflow-hidden border border-cyan-500 shadow-[0_0_30px_rgba(6,182,212,0.3)] overflow-y-auto"
+            className="relative min-h-[300px] h-[600px] min-w-[300px] max-w-[800px] w-full bg-slate-900 rounded-lg overflow-hidden border border-cyan-500 shadow-[0_0_30px_rgba(6,182,212,0.3)]"
           >
            
-            {esAdmin && (
-              <button
-                onClick={() => abrirEditar(servicio)}
-                className="absolute top-3 left-3 z-30 text-fuchsia-300 bg-black/60 hover:bg-fuchsia-600 hover:text-white px-3 py-1 rounded text-xs font-mono uppercase tracking-wide transition-colors"
-              >
-                Editar
-              </button>
-            )}
+            <button
+              onClick={() => abrirEditar(servicio)}
+              className="absolute top-3 left-3 z-30 text-fuchsia-300 bg-black/60 hover:bg-fuchsia-600 hover:text-white px-3 py-1 rounded text-xs font-mono uppercase tracking-wide transition-colors"
+            >
+              Editar
+            </button>
 
             <button
               onClick={cerrarModalDetalles}
@@ -218,18 +192,12 @@ export function Service() {
                 <span className="mx-2 self-start mt-4 text-sm px-3 py-1 border border-cyan-400/50 text-cyan-300 rounded bg-black/40">
                   {servicio.duracionMinutos} minutos
                 </span>
-                {esAdmin ? (
-                  <button
-                    onClick={() => activarDesactivar(servicio)}
-                    className="bg-cyan-400/50 text-white hover:bg-white/80 hover:text-blue-700 mx-2 self-start mt-4 text-sm px-3 py-1 border border-cyan-400/50 rounded bg-black/40 cursor-pointer transition-colors"
-                  >
-                    {servicio.activo === true ? "Activo" : "Desactivado"}
-                  </button>
-                ) : (
-                  <span className="mx-2 self-start mt-4 text-sm px-3 py-1 border border-cyan-400/50 text-cyan-300 rounded bg-black/40">
-                    {servicio.activo === true ? "Activo" : "Desactivado"}
-                  </span>
-                )}
+                <button
+                  onClick={() => activarDesactivar(servicio)}
+                  className="bg-cyan-400/50 text-white hover:bg-white/80 hover:text-blue-700 mx-2 self-start mt-4 text-sm px-3 py-1 border border-cyan-400/50 rounded bg-black/40 cursor-pointer transition-colors"
+                >
+                  {servicio.activo === true ? "Activo" : "Desactivado"}
+                </button>
               </div>
             </div>
           </div>
@@ -237,8 +205,8 @@ export function Service() {
       )}
 
       {/* Crear tarjetas de servicios */}
-      <div className="w-full sm:w-[85vw] relative top-10 min-h-[85vh] h-auto bg-transparent grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 auto-rows-[minmax(150px,auto)] gap-6 lg:gap-14 p-4 m-auto">
-        {elementosOrdenados.map((elementos) => (
+      <div className="w-[85vw] relative top-10 min-h-[85vh] h-auto bg-transparent grid grid-cols-4 auto-rows-[minmax(150px,auto)] gap-14 p-4 m-auto">
+        {elementos.map((elementos) => (
           <div
             onClick={() => verDetalles(elementos)}
             key={elementos.id}
@@ -271,14 +239,22 @@ export function Service() {
 
       {/* Modal para crear/editar el servicio */}
       {modal && (
-        <Modal onClose={cerrarModal} maxWidth="max-w-md" maxHeight="max-h-[90vh]">
-          <h2 className="text-sm uppercase text-fuchsia-300 mb-4">
-            {servicioEditando ? "Editar Servicio" : "Crear Servicio"}
-          </h2>
-
+        <AuthCard
+          className="-top-18 left-0 absolute h-screen w-screen bg-black/90 backdrop-blur-sm z-50 flex items-center justify-center"
+          title={servicioEditando ? "Editar Servicio" : "Crear Servicio"}
+          onClick={cerrarModal}
+        >
           <div className="relative pt-2">
+            <button
+              type="button"
+              onClick={cerrarModal}
+              className="absolute -top-12 right-0 text-gray-400 hover:text-white bg-white/10 hover:bg-white/20 rounded-full w-8 h-8 flex items-center justify-center transition-all cursor-pointer"
+            >
+              ✕
+            </button>
+
             <form className="flex flex-col" onSubmit={handleSubmit(onSubmit)}>
-              <Label required>Nombre</Label>
+              <Label>Nombre</Label>
               <input
                 placeholder="Nombre"
                 className="w-full border border-cyan-500/30 bg-slate-900/80 text-white rounded px-3 py-2 mt-1 mb-1 focus:outline-none focus:border-cyan-400"
@@ -289,7 +265,7 @@ export function Service() {
               />
               {errors.nombre && <span className="text-red-400 text-xs mb-2">{errors.nombre.message}</span>}
 
-              <Label required>Descripción</Label>
+              <Label>Descripción</Label>
               <input
                 placeholder="Descripción"
                 className="w-full border border-cyan-500/30 bg-slate-900/80 text-white rounded px-3 py-2 mt-1 mb-1 focus:outline-none focus:border-cyan-400"
@@ -300,7 +276,7 @@ export function Service() {
               />
               {errors.descripcion && <span className="text-red-400 text-xs mb-2">{errors.descripcion.message}</span>}
 
-              <Label required>Precio Base</Label>
+              <Label>Precio Base</Label>
               <input
                 type="number"
                 placeholder="32000"
@@ -312,7 +288,7 @@ export function Service() {
               />
               {errors.precioBase && <span className="text-red-400 text-xs mb-2">{errors.precioBase.message}</span>}
 
-              <Label required>Tiempo duración (minutos)</Label>
+              <Label>Tiempo duración (minutos)</Label>
               <input
                 placeholder="60"
                 className="w-full border border-cyan-500/30 bg-slate-900/80 text-white rounded px-3 py-2 mt-1 mb-1 focus:outline-none focus:border-cyan-400"
@@ -322,7 +298,7 @@ export function Service() {
               />
               {errors.duracion_minutos && <span className="text-red-400 text-xs mb-2">{errors.duracion_minutos.message}</span>}
 
-              <Label required htmlFor="especialidadId">Selecciona la especialidad:</Label>
+              <Label htmlFor="especialidadId">Selecciona la especialidad:</Label>
               <select
                 id="especialidadId"
                 className="mb-1 mt-4 p-2.5 bg-slate-900/80 border border-cyan-500/30 text-white rounded"
@@ -337,7 +313,7 @@ export function Service() {
               </select>
               {errors.especialidadId && <span className="text-red-400 text-xs mb-2">{errors.especialidadId.message}</span>}
 
-              <Label required={!servicioEditando}>Imagen del servicio</Label>
+              <Label>Imagen del servicio</Label>
               <input
                 type="file"
                 accept="image/*"
@@ -374,7 +350,7 @@ export function Service() {
               </button>
             </form>
           </div>
-        </Modal>
+        </AuthCard>
       )}
     </section>
   );
