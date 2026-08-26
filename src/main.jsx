@@ -7,7 +7,7 @@ import { AuthProvider } from './services/auth/AuthProvider'
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    <BrowserRouter>
+    <BrowserRouter basename="/Proyecto-WEB">
       <AuthProvider>
         <App />
       </AuthProvider>
