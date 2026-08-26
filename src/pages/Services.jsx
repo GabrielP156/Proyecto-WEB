@@ -129,13 +129,17 @@ export function Service() {
   } else {
     jsnEstado.activo = true
   }
-  await setState(undefined,servicio.id, jsnEstado)
-  setServicio((prev) => ({ ...prev, activo: jsnEstado.activo }));
+try {
+    await setState(undefined,servicio.id, jsnEstado)
+    setServicio((prev) => ({ ...prev, activo: jsnEstado.activo }));
     setElementos((prev) =>
         prev.map((el) =>
           el.id === servicio.id ? { ...el, activo: jsnEstado.activo } : el
         )
       );
+  } catch (error) {
+    alert(error.message || "No se pudo cambiar el estado del servicio");
+  }
 }
 
   const elementosOrdenados = [...elementos].sort((a, b) => {
